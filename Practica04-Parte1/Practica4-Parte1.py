@@ -85,7 +85,7 @@ resultadosFinalesTest = []
 resultadosFinalesTrain = []
 
 for i in range(4):
-  for j in range(10):
+  for j in range(100):
     pos=listaResultado[i][j]
     pos2=lista[i][j]
 
