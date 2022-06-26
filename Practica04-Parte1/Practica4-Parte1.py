@@ -13,7 +13,7 @@ import seaborn as sns
 y_train = y_train[0:100]
 x_train = x_train[0:100]
 
-radius = 10
+#-----------TEST----------
 
 trouserTest = np.where(y_test == 1)[0]
 trouserTest = trouserTest[0:100]
@@ -41,42 +41,39 @@ shirtTrain = shirtTrain[0:1000]
 snaekerTrain = np.where(y_train == 7)[0]
 snaekerTrain = snaekerTrain[0:1000]
 
-y_trainP = np.concatenate((trouserTrain, dressTrain, shirtTrain, snaekerTrain), axis=None)
+listaTest = [trouserTest, dressTest, shirtTest, snaekerTest]
+y_trainCategorias = np.concatenate((trouserTrain, dressTrain, shirtTrain, snaekerTrain), axis=None)
 
 x_train_2=[]
 y_train_2=[]
-for i in range(len(y_trainP)):
-  posy = y_trainP[i]
-  x_train_2.append(x_train[posy,:])
-  y_train_2.append(y_train[posy])
-
-
-lista = [trouserTest, dressTest, shirtTest, snaekerTest]
+for i in range(len(y_trainCategorias)):
+  y = y_trainCategorias[i]
+  x_train_2.append(x_train[y,:])
+  y_train_2.append(y_train[y])
 
 resultadoListTotal = []
 listaResultado = []
+resultado = 10
 
-resultado = 100.00
-
-for i in range(len(lista)):
+for i in range(len(listaTest)):
   resultados = []
   listaposicionTrain = []
   for j in range(100):
-    posicionesTest = lista[i][j]
+    posicionesTest = listaTest[i][j]
     for k in range(len(x_train_2)):
       imageTest = x_test[posicionesTest,:]
       imageTrain = x_train_2[k]
-      vTest = mahotas.features.zernike_moments(imageTest, radius)
-      vTrain = mahotas.features.zernike_moments(imageTrain, radius)
+      momentoTest = mahotas.features.zernike_moments(imageTest, 10)
+      momentoTrain = mahotas.features.zernike_moments(imageTrain, 10)
 
-      distancia = np.linalg.norm(vTest-vTrain)
+      distancia = np.linalg.norm(momentoTest - momentoTrain)
       if(distancia < resultado):
         resultado = distancia
-        posicionTrain=k
+        posicionTrain = k
 
     resultados.append(resultado)
     listaposicionTrain.append(posicionTrain)
-    resultado = 100.00
+    resultado = 10
 
   resultadoListTotal.append(resultados)
   listaResultado.append(listaposicionTrain)
@@ -86,22 +83,18 @@ resultadosFinalesTrain = []
 
 for i in range(4):
   for j in range(100):
-    pos=listaResultado[i][j]
-    pos2=lista[i][j]
+    posicion=listaResultado[i][j]
+    posicion2=listaTest[i][j]
+    valorTrain = y_train_2[posicion]
+    valorTest = y_test[posicion2]
+    resultadosFinalesTrain.append(valorTrain)
+    resultadosFinalesTest.append(valorTest)
 
-    valor1 = y_train_2[pos]
-    valor2 = y_test[pos2]
-    resultadosFinalesTrain.append(valor1)
-    resultadosFinalesTest.append(valor2)
-
-
-c = confusion_matrix(resultadosFinalesTrain, resultadosFinalesTest)
+matriz = confusion_matrix(resultadosFinalesTrain, resultadosFinalesTest)
 print("Matriz de Confusión")
-print(c)
+print(matriz)
 
 categorias = ['trouser','dress','shirt','snaeker']
-df = pd.DataFrame(c, index= categorias, columns= categorias)
-
-diagrama = sns.heatmap(df, cmap= 'flare', annot= True)
-diagrama.set(xlabel="Verdaderos", ylabel= 'Predicciones')
+mapaCalor = pd.DataFrame(matriz, index= categorias, columns= categorias)
+diagrama = sns.heatmap(mapaCalor, cmap= 'flare', annot= True)
 plt.show()
